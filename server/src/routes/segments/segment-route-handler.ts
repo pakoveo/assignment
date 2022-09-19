@@ -20,20 +20,22 @@ export async function segmentList(req: Request, res: Response): Promise<void> {
     const query = req.query.search ? { name: { $regex: req.query.search } } : {}
 
     const [segmentsCount, segmentList] = await Promise.all([
-       segmentCollection.count(query),
+       segmentCollection.countDocuments(query),
        segmentCollection.find(query).limit(limit).skip(skip).toArray()
     ])
 
     let [ userCountArray, incomeData, genderData] = await Promise.all([
-      Promise.all(segmentList.map(segment => userCollection.count({ segment_ids: segment._id }))),
+      Promise.all(segmentList.map(segment => userCollection.countDocuments({ segment_ids: segment._id }))),
       
       Promise.all(segmentList.map(segment => userCollection.aggregate([
         { $match: { segment_ids: segment._id }},
+        { $project: { income_level: 1, income_type: 1}},
         { $group: { _id:'$income_type', totalIncome: { $sum:"$income_level"}}},
         ]).toArray())),
 
       Promise.all(segmentList.map(segment => userCollection.aggregate([
         { $match: { segment_ids: segment._id } },
+        { $project: { gender: 1}},
         { $group: { _id:'$gender', userCount: { $sum:1 }}},
         { $sort: { userCount: -1 } },
         { $limit: 1 } 
@@ -126,9 +128,10 @@ export async function getSegmentGenderData(
     let data:ISegmentGenderData[] = [];
 
     let [ totalUsers, genderData ] = await Promise.all([
-      userCollection.count({ segment_ids: new ObjectId(req.params.id as string) }),
+      userCollection.countDocuments({ segment_ids: new ObjectId(req.params.id as string) }),
       userCollection.aggregate([
         { $match: { segment_ids: new ObjectId(req.params.id as string) }},
+        { $project: { gender: 1}},
         { $group: { _id:'$gender', userCount: { $sum:1 }}}
         ]).toArray()
     ])
