@@ -15,9 +15,12 @@ import { Router } from "@angular/router";
 })
 export class SegmentListComponent implements OnInit {
   segmentMetaDataList: ISegmentMetaData[] = [];
-
+  isLoading = false;
   totalCount: number;
   searchValue: string;
+  pageSize = 10;
+  pageNumber = 0;
+  pageSizeOptions: number[] = [10, 20, 30, 40];
 
   columnList: { label: string; key: string }[] = [
     { label: "Name", key: "name" },
@@ -34,7 +37,7 @@ export class SegmentListComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(private segmentService: SegmentService, private router: Router) {}
+  constructor(private segmentService: SegmentService, private router: Router) { }
 
   ngOnInit(): void {
     this.form.controls["search"].valueChanges
@@ -59,23 +62,41 @@ export class SegmentListComponent implements OnInit {
     );
   }
 
+  public onPageChange(e: PageEvent) {
+    this.pageSize = e.pageSize;
+    this.pageNumber = e.pageIndex
+    this.fetchSegments().subscribe(
+      (response) => {
+        this.handleListResponse(response);
+      },
+      (error) => {
+        console.log(`error fetching list ${error}`);
+      }
+    );
+  }
+
   private handleListResponse(response: {
     data: ISegmentMetaData[];
     totalCount: number;
   }) {
     this.segmentMetaDataList = response.data;
     this.totalCount = response.totalCount;
+    this.isLoading = false;
   }
 
   fetchSegments(): Observable<{
     data: ISegmentMetaData[];
     totalCount: number;
   }> {
+    this.isLoading = true;
     let params = new HttpParams()
 
     if (this.searchValue?.length) {
-      params = params.set("q", this.searchValue);
+      params = params.set("search", this.searchValue);
     }
+    params = params.set("skip", (this.pageNumber * this.pageSize).toString());
+    params = params.set("limit", (this.pageSize).toString());
+
     return this.segmentService.list(params);
   }
 

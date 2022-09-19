@@ -1,0 +1,22 @@
+.segment-list-container{
+    display: flex;
+    flex-direction: column;
+    height: calc( 100vh - 185px);
+    .table-div{
+        flex: 1;
+        max-height: calc( 100vh - 352px);
+        overflow: auto;
+        .loading-container{
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background: white;
+            height: 50vh;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            .spinner-container{
+                margin-bottom: 40px;
+            }
+        }
+    }
+}

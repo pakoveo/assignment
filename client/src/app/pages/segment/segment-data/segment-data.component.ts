@@ -73,7 +73,7 @@ export class SegmentDataComponent implements OnInit {
                 generateLabels: (chart) => {
                   return chart.data.labels.map((label, index) => {
                     return {
-                      text: `${label} - ${sorted[index]?.userPercentage}%`,
+                      text: `${label} - ${sorted[index]?.userPercentage.toFixed(2)}%`,
                       fillStyle:
                         sorted[index]._id === Gender.Male
                           ? this.genderColors[0]

@@ -29,3 +29,13 @@ a {
 .segment-item {
   white-space: normal;
 }
+
+.loading-container{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 50vh;
+  .spinner-container{
+      margin-bottom: 40px;
+  }
+}
